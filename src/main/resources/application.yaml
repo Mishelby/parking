@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: sber-parking
+
+  logging:
+    level:
+      root: INFO
+      org.springframework: DEBUG
+
+  jpa:
+    properties:
+      hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5438/parking
+    username: postgresql
+    password: mysecretpassword
+
+  batch:
+    jdbc:
+      initialize-schema: always
+
+    sql:
+      init:
+        mode: always
+        schema-locations: classpath:org/springframework/batch/core/schema-postgresql.sql
+
+server:
+  port: 8086
+

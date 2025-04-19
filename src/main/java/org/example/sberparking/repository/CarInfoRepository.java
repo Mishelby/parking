@@ -1,6 +1,5 @@
 package org.example.sberparking.repository;
 
-import org.example.sberparking.domain.CarEntity.EntryCarDto;
 import org.example.sberparking.domain.CarInfoEntity.CarInfoEntity;
 import org.example.sberparking.enums.CarType;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,13 +1,13 @@
-package org.example.sberparking.domain.CarEntity;
+package org.example.sberparking.domain.ParkingEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.example.sberparking.enums.CarType;;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CreateCarDto(
-        String number,
-        CarType type
+public record AverageParkingInfo(
+        Double hours,
+        Double minutes,
+        Double seconds
 ) {
 }

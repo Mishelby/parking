@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.sberparking.domain.CarInfoEntity.CarInfoEntity;
+import org.example.sberparking.domain.ParkingInfoEntity.ParkingInfoEntity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "parking")
@@ -16,8 +18,12 @@ public class ParkingEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToMany(mappedBy = "parkingEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<CarInfoEntity> carInfoEntity;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    private CarInfoEntity carInfoEntity;
+    @JoinColumn(name = "parking_info_id")
+    private ParkingInfoEntity parkingInfoEntity;
 
     @Column(name = "check_in_time")
     private LocalDateTime parkingTime;
@@ -26,7 +32,7 @@ public class ParkingEntity {
     private LocalDateTime parkingEndTime;
 
     public ParkingEntity(
-            CarInfoEntity carInfoEntity
+            List<CarInfoEntity> carInfoEntity
     ) {
         this.carInfoEntity = carInfoEntity;
     }

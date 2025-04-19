@@ -1,8 +1,8 @@
 package org.example.sberparking.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.sberparking.domain.CarEntity.CarEntity;
 import org.example.sberparking.domain.CarEntity.CreateCarDto;
+import org.example.sberparking.enums.CarType;
 import org.example.sberparking.mapper.CarMapper;
 import org.example.sberparking.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,6 +3,7 @@ package org.example.sberparking.domain.CarInfoEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.sberparking.domain.ParkingEntity.ParkingEntity;
 import org.example.sberparking.enums.CarType;
 
 @Entity
@@ -16,6 +17,10 @@ public class CarInfoEntity {
 
     @Column(name = "car_number",nullable = false)
     private String carNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parking_id")
+    private ParkingEntity parkingEntity;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "car_type")
