@@ -1,4 +1,4 @@
-package org.example.sberparking.domain.CarEntity;
+package org.example.sberparking.domain.CarInfoEntity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -6,28 +6,29 @@ import lombok.Setter;
 import org.example.sberparking.enums.CarType;
 
 @Entity
-@Table(name = "car")
+@Table(name = "car_info")
 @Getter
 @Setter
-public class CarEntity {
+public class CarInfoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "car_number", unique = true, nullable = false)
-    private String number;
+    @Column(name = "car_number",nullable = false)
+    private String carNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "car_type")
     private CarType carType;
 
-    public CarEntity(
-            String number,
+    public CarInfoEntity(
+            String carNumber,
             CarType carType
     ) {
-        this.number = number;
+        this.carNumber = carNumber;
         this.carType = carType;
     }
 
-    public CarEntity() {}
+    public CarInfoEntity() {
+    }
 }
