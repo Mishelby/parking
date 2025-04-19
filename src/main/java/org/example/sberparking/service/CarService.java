@@ -16,7 +16,10 @@ public class CarService {
     private final CarMapper carMapper;
 
     @Autowired
-    public CarService(CarRepository carRepository, CarMapper carMapper) {
+    public CarService(
+            CarRepository carRepository,
+            CarMapper carMapper
+    ) {
         this.carRepository = carRepository;
         this.carMapper = carMapper;
     }

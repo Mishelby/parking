@@ -34,11 +34,14 @@ public class ParkingService {
     public String entryCar(
             EntryCarDto entryCarDto
     ) {
+        log.info("Entry car for parking: {}", entryCarDto);
         isValidParking(entryCarDto);
+
         var carInfoEntity = checkCarInfo(entryCarDto);
         var savedParking = parkingRepository.save(
                 parkingMapper.toEntity(carInfoEntity)
         );
+        log.info("Saved parking: {}", savedParking);
 
         return isValidParkingTime(savedParking.getParkingTime());
     }
