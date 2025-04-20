@@ -3,7 +3,6 @@ package org.example.sberparking.domain.ParkingInfoEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.example.sberparking.domain.ParkingEntity.ParkingEntity;
 
 @Entity
 @Table(name = "parking_info")
@@ -14,26 +13,21 @@ public class ParkingInfoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private ParkingEntity parkingEntity;
-
     @Column(name = "count_of_seats")
-    private Integer countOfSeats;
+    private Long countOfSeats;
 
     @Column(name = "count_of_free_seats")
-    private Integer countOfFreeSeats;
+    private Long countOfFreeSeats;
 
     @Column(name = "count_of_occupied_seats")
-    private Integer countOfOccupiedSeats;
+    private Long countOfOccupiedSeats;
 
     public ParkingInfoEntity(
-            ParkingEntity parkingEntity,
-            Integer countOfSeats
+            Long countOfSeats
     ) {
-        this.parkingEntity = parkingEntity;
         this.countOfSeats = countOfSeats;
         this.countOfFreeSeats = countOfSeats;
-        this.countOfOccupiedSeats = 0;
+        this.countOfOccupiedSeats = 0L;
     }
 
     public ParkingInfoEntity() {}

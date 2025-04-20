@@ -11,7 +11,7 @@ import org.example.sberparking.enums.CarType;
 @Getter
 @Setter
 @ToString
-public class CarEntity {
+public class CarEntity implements CarStatus{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,13 +23,22 @@ public class CarEntity {
     @Column(name = "car_type")
     private CarType carType;
 
+    @Column(name = "is_parking")
+    private Boolean isParking;
+
     public CarEntity(
             String number,
             CarType carType
     ) {
         this.number = number;
         this.carType = carType;
+        this.isParking = false;
     }
 
     public CarEntity() {}
+
+    @Override
+    public boolean isParking() {
+        return isParking;
+    }
 }

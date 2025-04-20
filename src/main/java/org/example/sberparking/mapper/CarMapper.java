@@ -13,6 +13,7 @@ public interface CarMapper {
 
     @Mapping(target = "number", source = "createCarDto.number")
     @Mapping(target = "carType", source = "createCarDto.type")
+    @Mapping(target = "isParking", expression = "java(defaultIsParking(carEntity))")
     CarEntity toEntity(CreateCarDto createCarDto);
 
     default CarType carTypeFromString(
@@ -22,5 +23,9 @@ public interface CarMapper {
                 .filter(type -> type.getDescription().equalsIgnoreCase(carType))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid car type: %s".formatted(carType)));
+    }
+
+    default Boolean defaultIsParking(CarEntity carEntity) {
+        return Boolean.FALSE;
     }
 }

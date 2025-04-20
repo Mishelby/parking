@@ -2,7 +2,6 @@ package org.example.sberparking.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.sberparking.domain.CarEntity.CreateCarDto;
-import org.example.sberparking.enums.CarType;
 import org.example.sberparking.mapper.CarMapper;
 import org.example.sberparking.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,7 @@ public class CarService {
     ) {
         log.info("Creating new car {}", createCarDto);
         isCarValid(createCarDto);
+        isExistsCar(createCarDto);
 
         var savedCar = carRepository.save(
                 carMapper.toEntity(createCarDto)
@@ -47,5 +47,13 @@ public class CarService {
 
         if (createCarDto.number() == null || createCarDto.type() == null)
             throw new IllegalArgumentException("type or number cannot be null");
+    }
+
+    private void isExistsCar(
+            CreateCarDto createCarDto
+    ){
+        if(carRepository.isExistsByNumber(createCarDto.number()))
+            throw new IllegalArgumentException("Car with number %s already exists"
+                    .formatted(createCarDto.number()));
     }
 }
