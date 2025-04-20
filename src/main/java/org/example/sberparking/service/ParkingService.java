@@ -5,7 +5,7 @@ import org.example.sberparking.domain.CarEntity.CarEntity;
 import org.example.sberparking.domain.CarEntity.EntryCarDto;
 import org.example.sberparking.domain.CarEntity.ExitCarDto;
 import org.example.sberparking.domain.CarParking.CarParkingEntity;
-import org.example.sberparking.domain.CarParking.EmbedCarParkingKey;
+import org.example.sberparking.domain.ParkingEntity.AverageParkingInfo;
 import org.example.sberparking.domain.ParkingEntity.ParkingEntity;
 import org.example.sberparking.domain.ParkingInfoEntity.ParkingInfoDto;
 import org.example.sberparking.domain.ParkingInfoEntity.ParkingInfoEntity;
@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -67,14 +69,13 @@ public class ParkingService {
         var parkingEntity = parkingRepository.findByNumber(entryCarDto.parkingNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Parking with number %s not found!"
                         .formatted(entryCarDto.parkingNumber())));
-
         var carEntity = carRepository.findByNumber(entryCarDto.carNumber()).orElseThrow();
 
         if (parkingEntity.getParkingInfoEntity().getCountOfFreeSeats()
                 .equals(0L))
             throw new IllegalArgumentException("Нет места на парковке! %s".formatted(entryCarDto.parkingNumber()));
 
-        setEntyParkingSeats(parkingEntity);
+        setEntryParkingSeats(parkingEntity);
         var savedCarParking = carParkingRepository.save(
                 getCarParkingEntity(carEntity, parkingEntity)
         );
@@ -84,33 +85,21 @@ public class ParkingService {
         }
 
         parkingRepository.save(parkingEntity);
-
         return isValidParkingTime(savedCarParking.getCheckInTime());
-    }
-
-    private void isCarAlreadyParking(EntryCarDto entryCarDto) {
-        carParkingRepository.findByCarAndParkingNumber(
-                entryCarDto.parkingNumber(),
-                entryCarDto.carNumber()
-        ).ifPresent(parking -> {
-            if (parking.getExitTime() == null) {
-                throw new IllegalArgumentException("Car already parking! %s"
-                        .formatted(entryCarDto.carNumber()));
-            }
-        });
     }
 
     @Transactional
     public String exitParkingCar(
             ExitCarDto exitCarDto
     ) {
+        log.info("Exit car from parking: {}", exitCarDto);
         checkCarNumber(exitCarDto.carNumber());
         isCarInParking(exitCarDto);
+
         var parkingEntity = parkingRepository.findByNumber(exitCarDto.parkingNumber()).orElseThrow(
                 () -> new IllegalArgumentException("Parking with number %s not found!"
                         .formatted(exitCarDto.parkingNumber()))
         );
-
         var carEntity = carRepository.findByNumber(exitCarDto.carNumber()).orElseThrow();
 
         setExitParkingSeats(parkingEntity);
@@ -133,11 +122,32 @@ public class ParkingService {
             LocalDateTime startTime,
             LocalDateTime endTime
     ) {
-        return null;
-    }
+        var carsParking = carParkingRepository.getCarParkingByDateAndParkingNumber(startTime, endTime);
+        if (carsParking.isEmpty())
+            return new ParkingInfoDto(0L, 0L, null);
 
-    private static double roundTo1Decimal(double value) {
-        return Math.round(value * 10.0) / 10.0;
+        var parkingEntity = parkingRepository.findById(carsParking.get(0).getParking().getId()).orElseThrow(
+                () -> new IllegalArgumentException("Parking with id %s not found!"
+                        .formatted(carsParking.get(0).getParking().getId()))
+        );
+
+        var allParkingTime = carsParking.stream()
+                .filter(carParkingEntity -> carParkingEntity.getExitTime() != null)
+                .mapToDouble(carParking -> {
+                    LocalDateTime checkInTime = carParking.getCheckInTime();
+                    LocalDateTime exitTime = carParking.getExitTime();
+                    return Duration.between(checkInTime, exitTime).toMinutes();
+                }).sum();
+
+        double hours = allParkingTime / 60;
+        double minutes = allParkingTime % 60;
+        double seconds = allParkingTime % 60 / 60;
+
+        return new ParkingInfoDto(
+                parkingEntity.getParkingInfoEntity().getCountOfOccupiedSeats(),
+                parkingEntity.getParkingInfoEntity().getCountOfFreeSeats(),
+                new AverageParkingInfo(hours, minutes, seconds)
+        );
     }
 
     private static void isParkingValidData(Long countOfSeats) {
@@ -152,7 +162,19 @@ public class ParkingService {
         return new CarParkingEntity(carEntity, parkingEntity, LocalDateTime.now());
     }
 
-    private static void setEntyParkingSeats(ParkingEntity parkingEntity) {
+    private void isCarAlreadyParking(EntryCarDto entryCarDto) {
+        carParkingRepository.findByCarAndParkingNumber(
+                entryCarDto.parkingNumber(),
+                entryCarDto.carNumber()
+        ).ifPresent(parking -> {
+            if (parking.getExitTime() == null) {
+                throw new IllegalArgumentException("Car already parking! %s"
+                        .formatted(entryCarDto.carNumber()));
+            }
+        });
+    }
+
+    private static void setEntryParkingSeats(ParkingEntity parkingEntity) {
         var countOfFreeSeats = parkingEntity.getParkingInfoEntity().getCountOfFreeSeats();
         var countOfOccupiedSeats = parkingEntity.getParkingInfoEntity().getCountOfOccupiedSeats();
         parkingEntity.getParkingInfoEntity().setCountOfFreeSeats(countOfFreeSeats - ONE);
@@ -177,11 +199,6 @@ public class ParkingService {
     private void checkCarNumber(String carNumber) {
         if (carNumber == null)
             throw new IllegalArgumentException("Car number cannot be null!");
-    }
-
-    private static void setParkingParams(ParkingEntity parkingEntity, ParkingInfoEntity parkingInfoEntity) {
-        parkingEntity.setParkingInfoEntity(parkingInfoEntity);
-        parkingEntity.setParkingNumber(UUID.randomUUID().toString());
     }
 
     private void isValidParking(EntryCarDto entryCarDto) {
